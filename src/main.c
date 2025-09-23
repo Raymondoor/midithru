@@ -96,9 +96,10 @@ int main(int argc, char *argv[]) {
         printf("Error opening output device %d\n", outID);
         return 1;
     }
-    midiOutShortMsg(Output, 0x007F3C90); // Note On, channel 1, note 60, velocity 127
+    MidiMessage test = {NOTE_ON | CH01, {NT_C4, VEL_STANDARD}};
+    midiOutShortMsg(Output, midiShortMsg4bytes(test)); // Note On, channel 1, note 60, velocity 100
     Sleep(500);
-    midiOutShortMsg(Output, 0x00403C80); // Note Off, same note
+    midiOutShortMsg(Output, midiShortMsg4bytesChangeToNoteOff(&test)); // Note Off, same note
 
     // Open input, pass output handle as instance
     res = midiInOpen(&Input, inID, (DWORD_PTR)thru, (DWORD_PTR)Output, CALLBACK_FUNCTION);

@@ -86,10 +86,6 @@ typedef enum{
 unsigned long midiShortMsg4bytes(MidiMessage message){
     return (0x00 << 24) | (message.data[1] << 16) | (message.data[0] << 8) | (message.status);
 }
-unsigned long midiShortMsg4bytesoff(MidiMessage message){
-    message.status = (NOTE_OFF & 0xF0) | (message.status & 0x0F);
-    return (0x00 << 24) | (message.data[1] << 16) | (message.data[0] << 8) | (message.status);
-}
 unsigned long midiShortMsg4bytesChangeToNoteOff(MidiMessage *pMessage){
     pMessage->status = (NOTE_OFF & 0xF0) | (pMessage->status & 0x0F);
     return (0x00 << 24) | (pMessage->data[1] << 16) | (pMessage->data[0] << 8) | (pMessage->status);
