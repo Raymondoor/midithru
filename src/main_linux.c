@@ -19,123 +19,19 @@
     typedef unsigned char BYTE;
 #endif
 
-
-// Callback: forward MIDI messages
-void CALLBACK thru(HMIDIIN hMidiIn, UINT wMsg,
-                   DWORD_PTR dwInstance, DWORD dwParam1, DWORD dwParam2) {
-    if (wMsg == MIM_DATA) {
-        HMIDIOUT out = (HMIDIOUT)(DWORD_PTR)dwInstance;
-
-        // Unpack the MIDI message
-        BYTE status = (BYTE)(dwParam1 & 0xFF);
-        BYTE data1  = (BYTE)((dwParam1 >> 8) & 0xFF);
-        BYTE data2  = (BYTE)((dwParam1 >> 16) & 0xFF);
-
-        // Print it
-        printf("MIDI IN: status=%s, data1=%d, data2=%d\n", statusToString(status), data1, data2);
-        printf("RAW dwParam1 = 0x%08lX\n", dwParam1);
-
-        // Forward it to output
-        MMRESULT r = midiOutShortMsg(out, dwParam1);
-        if (r != MMSYSERR_NOERROR) {
-            printf("midiOutShortMsg error: %d\n", r);
-        }
-    }
-}
-
-// Show available MIDI devices
-void listDevices() {
-    UINT numIn = midiInGetNumDevs();
-    UINT numOut = midiOutGetNumDevs();
-    MIDIINCAPS inCaps;
-    MIDIOUTCAPS outCaps;
-
-    printf("MIDI Input devices:\n");
-    for(UINT i = 0; i < numIn; i++){
-        if(midiInGetDevCaps(i, &inCaps, sizeof(inCaps)) == MMSYSERR_NOERROR){
-            printf("  ID %u: %s\n", i, inCaps.szPname);
-        }
-    }
-
-    printf("\nMIDI Output devices:\n");
-    for(UINT i = 0; i < numOut; i++){
-        if(midiOutGetDevCaps(i, &outCaps, sizeof(outCaps)) == MMSYSERR_NOERROR){
-            printf("  ID %u: %s\n", i, outCaps.szPname);
-        }
-    }
-    printf("\n");
-}
-
-int main(int argc, char *argv[]) {
-    HMIDIIN Input;
-    HMIDIOUT Output;
-    MMRESULT res;
-    int inID = -1, outID = -1;
-
-    // Parse arguments
-    for (int i = 1; i < argc; i++) {
-        if (strcmp(argv[i], "-i") == 0 && i + 1 < argc) {
-            inID = atoi(argv[++i]);
-        } else if (strcmp(argv[i], "-o") == 0 && i + 1 < argc) {
-            outID = atoi(argv[++i]);
-        } else if (strcmp(argv[i], "-l") == 0) {
-            listDevices();
-            return 0;
-        } else {
-            printf("Usage: %s -i <inputID> -o <outputID>\n", argv[0]);
-            printf("       %s -l   (list devices)\n", argv[0]);
-            return 1;
-        }
-    }
-
-    if (inID < 0 || outID < 0) {
-        printf("You must specify both -i and -o.\n");
-        listDevices();
-        return 1;
-    }
-
-    // Open output
-    res = midiOutOpen(&Output, outID, 0, 0, CALLBACK_NULL);
-    if (res != MMSYSERR_NOERROR) {
-        printf("Error opening output device %d\n", outID);
-        return 1;
-    }
-    MidiMessage test = {NOTE_ON | CH01, {NT_C4, VEL_STANDARD}};
-    midiOutShortMsg(Output, midiShortMsg4bytes(test)); // Note On, channel 1, note 60, velocity 100
-    Sleep(500);
-    midiOutShortMsg(Output, midiShortMsg4bytesChangeToNoteOff(&test)); // Note Off, same note
-
-    // Open input, pass output handle as instance
-    res = midiInOpen(&Input, inID, (DWORD_PTR)thru, (DWORD_PTR)Output, CALLBACK_FUNCTION);
-    if (res != MMSYSERR_NOERROR) {
-        printf("Error opening input device %d\n", inID);
-        midiOutClose(Output);
-        return 1;
-    }
-
-    // Start receiving
-    midiInStart(Input);
-    printf("MIDI Thru active (input=%d => output=%d).\n", inID, outID);
-    printf("Press 'q' to quit.\n");
-
-    // Main loop
-    int running = 1;
-    while(running){
-        // only works for windows atm
-        if(_kbhit()){
-            int c = _getch();
-            if(c == 'q' || c == 'Q'){
-                running = 0;
-            }
-        }
-        Sleep(50);
-    }
-    // Cleanup
-    midiInStop(Input);
-    midiInClose(Input);
-    midiOutReset(Output);
-    midiOutClose(Output);
-
-    printf("MIDI Thru stopped.\n");
+snd_seq_t *open_client();
+int main(){
+    MidiMessage SomeNoteOn;
+    SomeNoteOn.status = NOTE_ON | CH01;
+    MidiMessage example = {CONTROL_CHANGE | CH01, {DAMPER_PEDAL, CSWITCH_ON}, 3};
     return 0;
+}
+snd_seq_t *open_client(){
+        snd_seq_t *handle;
+        int err;
+        err = snd_seq_open(&handle, "default", SND_SEQ_OPEN_INPUT, 0);
+        if (err < 0)
+                return NULL;
+        snd_seq_set_client_name(handle, "My Client");
+    return handle;
 }

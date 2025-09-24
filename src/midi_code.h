@@ -40,8 +40,8 @@ typedef enum{
 }ControlNumber;
 
 typedef enum{
-    OFF = 0x00,
-    ON = 0x7F // 127, 01111111
+    CSWITCH_OFF = 0x00,
+    CSWITCH_ON = 0x7F // 127, 01111111
 }ControlSwitch;
 
 typedef enum{
