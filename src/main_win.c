@@ -12,6 +12,7 @@
     #include <unistd.h>
     #include <termios.h>
     #include <fcntl.h>
+    #include <alsa/asoundlib.h>
 #endif // OS specific
 #ifndef BYTE
     typedef unsigned char BYTE;
@@ -42,7 +43,7 @@ void CALLBACK thru(HMIDIIN hMidiIn, UINT wMsg,
 }
 
 // Show available MIDI devices
-void listDevices() {
+void listDevices(){
     UINT numIn = midiInGetNumDevs();
     UINT numOut = midiOutGetNumDevs();
     MIDIINCAPS inCaps;
