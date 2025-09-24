@@ -1,4 +1,5 @@
 // several code was generated using AI. I will replace all with my code after I get the hang of C and midi stuff in each OS
+// I am not good at handling stuff yet, I will keep this code for the windows version.
 #include <stdio.h>
 #include <string.h>
 #include "./midi_code.h"
