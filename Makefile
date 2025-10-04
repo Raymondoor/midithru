@@ -1,23 +1,26 @@
-TARGET = ./build/midithru.exe
+
+# Detect OS
+ifeq ($(OS),Windows_NT)
+    TARGET = ./build/midithru.exe
+    SRC = src/main_win.c
+    LDFLAGS = -lwinmm
+    RM = del /Q
+    TARGET_FILE = $(subst /,\,$(TARGET))
+else
+    TARGET = ./build/midithru
+    SRC = src/main_linux.c
+    LDFLAGS = -lasound
+    RM = rm -f
+    TARGET_FILE = $(TARGET)
+endif
+
 CC = gcc
 CFLAGS = -Wall -O2
-LDFLAGS = -lwinmm
-
-SRC = src/main.c
 
 all: $(TARGET)
 
 $(TARGET): $(SRC)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
-
-# Auto-detect OS
-ifeq ($(OS),Windows_NT)
-    RM = del /Q
-    TARGET_FILE = $(subst /,\,$(TARGET))
-else
-    RM = rm -f
-    TARGET_FILE = $(TARGET)
-endif
 
 clean:
 	-$(RM) $(TARGET_FILE)

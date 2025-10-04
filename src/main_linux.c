@@ -21,9 +21,8 @@
 
 snd_seq_t *open_client();
 int main(){
-    MidiMessage SomeNoteOn;
-    SomeNoteOn.status = NOTE_ON | CH01;
-    MidiMessage example = {CONTROL_CHANGE | CH01, {DAMPER_PEDAL, CSWITCH_ON}, 3};
+    snd_seq_t *handle = open_client();
+    printf("%d", snd_seq_client_id(handle));
     return 0;
 }
 snd_seq_t *open_client(){
